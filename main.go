@@ -3,12 +3,12 @@ package main
 import (
 	"fmt"
 	"net/http"
+
+	"ap_final/internal/router"
 )
 
 func main() {
-	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintln(w, "ok")
-	})
+	router.SetupRoutes()
 
 	fmt.Println("Server running on http://localhost:8080")
 	_ = http.ListenAndServe(":8080", nil)
