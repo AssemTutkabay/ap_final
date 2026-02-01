@@ -1,15 +1,17 @@
 package main
 
 import (
-	"fmt"
+	"log"
 	"net/http"
 
-	"ap_final/internal/router"
+	"ap_final/internal/app"
 )
 
 func main() {
-	router.SetupRoutes()
+	h := app.Build()
 
-	fmt.Println("Server running on http://localhost:8080")
-	_ = http.ListenAndServe(":8080", nil)
+	log.Println("listening on :8080")
+	if err := http.ListenAndServe(":8080", h); err != nil {
+		log.Fatal(err)
+	}
 }
