@@ -18,6 +18,8 @@ func Build() http.Handler {
 		{ID: "srv2", SalonID: "s2", Name: "Manicure", Price: 6000, DurationMin: 45},
 	}
 	serviceStore := memory.NewServiceStore(servicesSeed)
+	servicesH := handlers.NewServicesHandler(serviceStore)
+
 
 	bookingSvc := service.NewBookingService(bookingStore, serviceStore)
 
@@ -29,5 +31,6 @@ func Build() http.Handler {
 		Health:   healthH,
 		Salons:   salonsH,
 		Bookings: bookingsH,
+		Services: servicesH,
 	})
 }

@@ -10,6 +10,8 @@ type RouterDeps struct {
 	Health   *handlers.HealthHandler
 	Salons   *handlers.SalonsHandler
 	Bookings *handlers.BookingsHandler
+	Services *handlers.ServicesHandler
+
 }
 
 func NewRouter(deps RouterDeps) http.Handler {
@@ -25,6 +27,9 @@ func NewRouter(deps RouterDeps) http.Handler {
 
 	// Bookings by id (cancel)
 	mux.HandleFunc("/bookings/", deps.Bookings.HandleByID)
+
+	// Services catalog
+	mux.HandleFunc("/services", deps.Services.Handle)
 
 	return mux
 }
