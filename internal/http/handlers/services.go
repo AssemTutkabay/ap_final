@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"ap_final/internal/store"
@@ -17,19 +16,21 @@ func NewServicesHandler(store store.ServiceStore) *ServicesHandler {
 
 func (h *ServicesHandler) Handle(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
-		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		writeErr(w, http.StatusMethodNotAllowed, "method not allowed")
 		return
 	}
 
 	salonID := r.URL.Query().Get("salonId")
-
-	services, err := h.store.List(r.Context(), salonID)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	if salonID == "" {
+		writeErr(w, http.StatusBadRequest, "salonId required")
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	_ = json.NewEncoder(w).Encode(services)
-}
+	services, err := h.store.ListBySalon(r.Context(), salonID)
+	if err != nil {
+		writeErr(w, http.StatusInternalServerError, "internal error")
+		return
+	}
 
+	writeJSON(w, http.StatusOK, services)
+}

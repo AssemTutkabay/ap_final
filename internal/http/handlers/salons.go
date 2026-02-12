@@ -1,30 +1,31 @@
 package handlers
 
 import (
-	"encoding/json"
 	"net/http"
 
-	"ap_final/internal/domain"
+	"ap_final/internal/store"
 )
 
 type SalonsHandler struct {
-	salons []domain.Salon
+	store store.SalonStore
 }
 
-func NewSalonsHandler() *SalonsHandler {
-	return &SalonsHandler{
-		salons: []domain.Salon{
-			{ID: "s1", Name: "Glow Studio"},
-			{ID: "s2", Name: "Nail Bar"},
-		},
-	}
+func NewSalonsHandler(store store.SalonStore) *SalonsHandler {
+	return &SalonsHandler{store: store}
 }
 
 func (h *SalonsHandler) Handle(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
-		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		writeErr(w, http.StatusMethodNotAllowed, "method not allowed")
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	_ = json.NewEncoder(w).Encode(h.salons)
+
+	city := r.URL.Query().Get("city")
+	list, err := h.store.ListPublic(r.Context(), city)
+	if err != nil {
+		writeErr(w, http.StatusInternalServerError, "internal error")
+		return
+	}
+
+	writeJSON(w, http.StatusOK, list)
 }

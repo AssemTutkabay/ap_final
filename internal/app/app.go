@@ -1,36 +1,52 @@
 package app
 
 import (
-	"ap_final/internal/domain"
+	"database/sql"
 	"net/http"
 
 	httpx "ap_final/internal/http"
 	"ap_final/internal/http/handlers"
+	"ap_final/internal/http/middleware"
 	"ap_final/internal/service"
-	"ap_final/internal/store/memory"
+	"ap_final/internal/store/postgres"
 )
 
-func Build() http.Handler {
-	bookingStore := memory.NewBookingStore()
+func Build(db *sql.DB) http.Handler {
+	userStore := postgres.NewUserStore(db)
+	salonStore := postgres.NewSalonStore(db)
+	serviceStore := postgres.NewServiceStore(db)
+	reviewStore := postgres.NewReviewStore(db)
+	bookingStore := postgres.NewBookingStore(db)
 
-	servicesSeed := []domain.Service{
-		{ID: "srv1", SalonID: "s1", Name: "Haircut", Price: 8000, DurationMin: 60},
-		{ID: "srv2", SalonID: "s2", Name: "Manicure", Price: 6000, DurationMin: 45},
-	}
-	serviceStore := memory.NewServiceStore(servicesSeed)
-	servicesH := handlers.NewServicesHandler(serviceStore)
-
+	// NEW: stores for RBAC master + salon_admin
+	masterStore := postgres.NewMasterStore(db)
+	salonAdminStore := postgres.NewSalonAdminStore(db)
 
 	bookingSvc := service.NewBookingService(bookingStore, serviceStore)
 
+	authMw := middleware.NewAuthMiddleware(userStore)
+
 	healthH := handlers.NewHealthHandler()
-	salonsH := handlers.NewSalonsHandler()
-	bookingsH := handlers.NewBookingsHandler(bookingSvc)
+	salonsH := handlers.NewSalonsHandler(salonStore)
+	servicesH := handlers.NewServicesHandler(serviceStore)
+
+	// UPDATED: bookings handler now needs masterStore + salonAdminStore
+	bookingsH := handlers.NewBookingsHandler(bookingSvc, masterStore, salonAdminStore)
+
+	reviewsH := handlers.NewReviewsHandler(reviewStore, bookingStore)
+
+	authH := handlers.NewAuthHandler(userStore)
+	meH := handlers.NewMeHandler()
 
 	return httpx.NewRouter(httpx.RouterDeps{
 		Health:   healthH,
 		Salons:   salonsH,
 		Bookings: bookingsH,
 		Services: servicesH,
+		Reviews:  reviewsH,
+
+		Auth:   authH,
+		Me:     meH,
+		AuthMw: authMw,
 	})
 }

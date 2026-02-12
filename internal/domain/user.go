@@ -12,8 +12,12 @@ const (
 )
 
 type User struct {
-	ID        string    `json:"id"`
-	Role      UserRole  `json:"role"`
-	Contact   string    `json:"contact"` // phone/email одним полем
-	CreatedAt time.Time `json:"createdAt"`
+	ID           string    `json:"id"`
+	Role         UserRole  `json:"role"`
+	FullName     string    `json:"fullName,omitempty"`
+	Email        string    `json:"email,omitempty"`
+	Phone        string    `json:"phone,omitempty"`
+	PasswordHash string    `json:"-"`
+	IsActive     bool      `json:"isActive"`
+	CreatedAt    time.Time `json:"createdAt"`
 }

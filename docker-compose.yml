@@ -1,0 +1,14 @@
+services:
+  db:
+    image: postgres:16
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: ap_final
+      POSTGRES_USER: ap_final
+      POSTGRES_PASSWORD: ap_final
+    volumes:
+      - ap_final_pgdata:/var/lib/postgresql/data
+
+volumes:
+  ap_final_pgdata:
