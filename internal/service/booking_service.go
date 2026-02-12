@@ -116,8 +116,7 @@ func (bs *BookingService) ListBySalonIDs(ctx context.Context, salonIDs []string)
 	return out, nil
 }
 
-// FIX: повторный DELETE не должен ломаться.
-// Если уже cancelled_by_client, вернем как есть (idempotent).
+// FIX
 func (bs *BookingService) CancelByClient(ctx context.Context, bookingID, clientID string) (domain.Booking, error) {
 	if bookingID == "" {
 		return domain.Booking{}, errors.New("bookingId required")
